@@ -1,0 +1,73 @@
+Team 4 Queries 
+
+
+-- Query 1 : Returns table of lowest rated movie by genre 
+
+USE mydb;
+CREATE OR REPLACE VIEW lowest_rated AS
+SELECT Genre.Genre_title AS 'Genre', movies.Title AS "Lowest Rated Movie Name", Rating.Rating_number  AS "Rating" 
+FROM Genre, movies, movie_genre, Rating
+WHERE Genre.Genre_id = movie_genre.Genre_id AND movies.movie_id = movie_genre.movie_id AND (movies.Rating_id = Rating.Rating_id)
+AND (Genre.Genre_title, movies.Rating_id) IN
+(
+SELECT Genre.Genre_title, MIN(movies.Rating_id) 
+FROM Genre, movies, movie_genre
+WHERE Genre.Genre_id = movie_genre.Genre_id AND movies.movie_id = movie_genre.movie_id
+GROUP BY Genre.Genre_title
+)
+
+
+-- Query 2 : Returns table of companies and the movies those companies produced. 
+
+USE mydb; 
+CREATE OR REPLACE VIEW sameProductionCompany AS 
+SELECT movies.company_id AS 'Company ID' , ProductionCompany.company_name AS 'Company Name' , GROUP_CONCAT(Title SEPARATOR', ') AS 'Movie Name'
+FROM movies 
+INNER JOIN ProductionCompany ON movies.company_id = ProductionCompany.company_id
+WHERE movies.company_id in (
+  SELECT movies.company_id 
+  FROM movies 
+  GROUP BY company_id HAVING COUNT(*) > 1  )
+GROUP BY movies.company_id
+
+
+-- Query 3 : Create a view that displays average salary between lead actor and director for a particular film. 
+
+USE mydb;
+CREATE OR REPLACE VIEW actor_dir_sal AS
+SELECT a.actor_id AS 'Actor ID', CONCAT(a.first_name,' ', a.last_name) AS 'Actor Name',
+CONCAT(d.first_name,' ', d.last_name) AS 'Director Name', 
+a.actor_salary AS 'Actor Salary',
+d.director_salary AS 'Director Salary',
+(a.actor_salary + d.director_salary/ 2) AS 'Mean Salary'
+FROM actors a
+	LEFT JOIN Director d
+		ON a.actor_id = d.director_id AND d.director_salary
+ORDER BY a.actor_id;
+
+
+-- Query 4: Create a view that only displays movies that are categorized as “Action.”
+
+USE mydb;
+CREATE OR REPLACE VIEW mg_action AS
+SELECT movies.movie_id AS 'Movie ID', movies.Title AS 'Movie name',
+Genre.Genre_title AS 'Genre name'
+FROM movies
+	JOIN movie_genre
+		ON movies.movie_id = movie_genre.movie_id
+	JOIN Genre
+		ON movie_genre.Genre_id = Genre.Genre_id 
+WHERE Genre.Genre_id = 1
+ORDER BY movies.movie_id;
+
+-- Query 5: Return movies from last 5 years (2015 - 2020) 
+
+USE mydb; 
+CREATE OR REPLACE VIEW lastFiveYears AS 
+SELECT movies.movie_id AS 'Movie ID',  movies.Title AS 'Movie Name', GROUP_CONCAT(Genre.Genre_title SEPARATOR', ') AS 'Genre'
+FROM movies, Genre, movie_genre
+WHERE movies.Year < 2020 AND movies.Year > 2015 AND Genre.Genre_id = movie_genre.Genre_id AND movies.movie_id = movie_genre.movie_id
+GROUP BY movies.movie_id
+
+
+
