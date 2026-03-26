@@ -1,3 +1,3 @@
 Final Project for INST 327- Database Design & Modeling course
 
-Can get a full overview of the project in the team_4_mydb_report.pdf
+Full overview of the project in this section of the repository: team_4_mydb_report.pdf
